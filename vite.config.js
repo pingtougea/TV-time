@@ -7,16 +7,13 @@ export default defineConfig({
   base: '/',
   build: {
     outDir: 'dist',
-    assetsDir: 'assets',
     rollupOptions: {
       output: {
-        assetFileNames: 'assets/[name]-[hash][extname]',
-        chunkFileNames: 'assets/[name]-[hash].js',
-        entryFileNames: 'assets/[name]-[hash].js'
+        manualChunks: {
+          vendor: ['react', 'react-dom'],
+          antd: ['antd']
+        }
       }
     }
-  },
-  server: {
-    host: true
   }
 })
