@@ -48,6 +48,7 @@ const App = () => {
       const raw = localStorage.getItem(favoritesStorageKey)
       if (raw) {
         setFavorites(JSON.parse(raw))
+        // JSON.parse 把字符串转回数组，完美还原数据。
       }
     } catch (e) {
       console.warn('Failed to load favorites from localStorage', e)
@@ -58,6 +59,7 @@ const App = () => {
   useEffect(() => {
     try {
       localStorage.setItem(favoritesStorageKey, JSON.stringify(favorites))
+      // JSON.stringify 是 JavaScript 的内置方法，作用是将 JavaScript 对象 / 数组转换为 JSON 格式的字符串。
     } catch (e) {
       console.warn('Failed to persist favorites to localStorage', e)
     }
@@ -66,7 +68,11 @@ const App = () => {
   // 切换收藏
   const handleToggleFavorite = (movie) => {
     setFavorites((prev) => {
+      //  prev 就是当前的 favorites 数组（更新前的状态）
+      //传函数（函数式更新）：setFavorites(prev => newValue)适合新状态依赖旧状态的场景（比如需要先判断旧状态中的数据）
       const exists = prev.some((m) => m.id === movie.id)
+      //prev.some(...) 是 JavaScript 数组的 some 方法，
+      // some 是数组的内置方法，作用是：检测数组中是否至少有一个元素满足指定条件，返回 true 或 false
       if (exists) {
         return prev.filter((m) => m.id !== movie.id)
       }
@@ -76,6 +82,8 @@ const App = () => {
         title: movie.title,
         poster_path: movie.poster_path,
         vote_average: movie.vote_average ?? 0,
+        // 如果电影评分确实是 0（有效评分，只是很低），用 ?? 0 会保留 0（正确）；
+        // 但如果用 || 0，因为 0 是假值，会错误地返回 0（看似结果一样，但逻辑上 ?? 更准确，因为它明确区分了 “无值” 和 “值为 0”）。
         release_date: movie.release_date ?? '',
         original_language: movie.original_language ?? '',
         genre_ids: movie.genre_ids || [],
@@ -92,9 +100,9 @@ const App = () => {
     setIsDetailLoading(true)
     try {
       // 获取更详细信息（可取消）
-      const controller = new AbortController()
+      const controller = new AbortController() // 用于中断请求
       const details = await tmdbGetMovieDetails(movie.id, controller.signal)
-      setSelectedMovie(details)
+      setSelectedMovie(details) // 更新为完整详情
     } catch (error) {
       console.error(`Error fetching movie details. ${error}`)
     } finally {
@@ -169,6 +177,7 @@ const App = () => {
 
   // 加载 TMDB 类型映射，用于显示真实类型名称
   useEffect(() => {
+    //这段代码只会在组件第一次加载（挂载）时执行一次，不会重复执行
     const loadGenres = async () => {
       try {
         const data = await tmdb.getGenres('zh-CN')
@@ -229,6 +238,7 @@ const App = () => {
                     style={{ width: 200 }}
                     aria-label="排序方式"
                     variant="borderless"
+                    //看不懂
                     popupMatchSelectWidth
                     classNames={{
                       popup: { root: '!bg-[#0f0d23] !text-[#cecefb]' },
@@ -251,9 +261,13 @@ const App = () => {
                       key={movie.id}
                       movie={movie}
                       onDetailClick={() => handleMovieDetail(movie)}
+                      //  点击查看详情
                       isFavorite={isFavorite(movie.id)}
+                      // 是否收藏
                       onToggleFavorite={handleToggleFavorite}
+                      // 切换收藏
                       genreNameById={genreNameById}
+                      // 类型映射
                     />
                   ))}
                 </ul>
